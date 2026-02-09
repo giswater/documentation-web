@@ -15,7 +15,7 @@ matemática*, tablas que almacenan datos necesarios para modelos hidráulicos y 
 que contienen atributos particulares según cada tipo de elemento; y un bloque final de *Otras tablas* para información adicional.
 
 
-.. figure:: images/modelo_datos_conceptual2.png
+.. figure:: img/model-db-ws.png
 
     Modelo de datos conceptual de Giswater para WS.
 
@@ -26,7 +26,7 @@ El modelo de datos para los proyectos de UD resulta similar que para Ws, en el *
 definen los objetos topológicos (node/arc/connec/gully/subcatchment) incorporanso en este caso dos nuevos elementos adicionales: gully y subcatchment.
 A diferencia de WS, en los proyectos de UD no se incluye el módulo de interoperabilidad.
 
-.. figure:: images/modelo_datos_conceptual2_ud.png
+.. figure:: img/model-db-ud.png
 
     Modelo de datos conceptual de Giswater para UD.
 

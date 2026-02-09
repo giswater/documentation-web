@@ -41,8 +41,8 @@ Please take a look at one of the following documents.
    :maxdepth: 2
    :caption: FOR ADMINISTRATORS
 
-   Admin Protocols <giswater/for-admins/admin-protocols/config_form_fields>
-   Logic dbmodel <giswater/for-admins/logic_dbmodel/logic_dbmodel>
+   Admin Protocols <giswater/for-admins/admin-protocols/index>
+   Logic dbmodel <giswater/for-admins/logic-dbmodel/logic-dbmodel>
    
 
 
