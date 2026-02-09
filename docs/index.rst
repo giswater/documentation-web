@@ -41,6 +41,10 @@ Please take a look at one of the following documents.
    :maxdepth: 2
    :caption: FOR ADMINISTRATORS
 
-   Administrator Documentation <giswater/for-admins/index>
+   Admin Protocols <giswater/for-admins/admin-protocols/config_form_fields>
+   Logic dbmodel <giswater/for-admins/logic_dbmodel/logic_dbmodel>
+   
+
+
 
 This is a test to verify the correct workflow of the sync-i18n process. Prova 2. Prova 3.
