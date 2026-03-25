@@ -2,25 +2,25 @@
 Raster loading
 ==============
 
-Esta sección proporciona una visión general del funcionamiento de la gestión de rásters en Giswater y se describiran los elementos principales 
-implicados en la administración de datos ráster, así como los requisitos y componentes necesarios para su correcta integración y uso 
-en distintos entornos de servidor ya sea **Linux** o **Windows**.
+This section provides an overview of how raster management works in Giswater and describes the main elements 
+involved in raster data administration, as well as the requirements and components necessary for its proper integration and use 
+in different server environments, whether **Linux** or **Windows**.
 
-Las dos tablas que actúan sobre el sistema son:
+The two tables that act on the system are:
 
 - ext_raster_dem
 - ext_cat_raster
 
-Estas ya están creadas, pero el *ext_raster_dem* viene sin restricciones. En el caso de un esquema de
-utils existente, se almacenan allí, pero tienen nombres diferentes:
+These are already created, but *ext_raster_dem* comes without restrictions. In the case of an existing utils schema, 
+they are stored there, but have different names:
 
 - raster_dem
 
 - cat_raster
 
-La tabla **raster_dem** se llena desde el exterior de acuerdo con el proceso explicado en ítem 1.
-En caso de estar en un esquema corporativo de utils, la tabla de catálogo se llena automáticamente con
-un disparador AFTER INSERT en la toma de ráster:
+The **raster_dem** table is populated externally according to the process explained in item 1.
+If in a corporate utils schema, the catalog table is automatically populated with
+an AFTER INSERT trigger during raster acquisition:
 
   file name (rastercat_id).
 
@@ -28,119 +28,124 @@ un disparador AFTER INSERT en la toma de ráster:
 
   tstamp.
 
-Por otro lado, para utilizar esta funcionalidad, existen dos variables:
+On the other hand, to use this functionality, there are two variables:
 
-- **Sistema**: admin_raster_dem (debe ser TRUE).
+- **Sistema**: admin_raster_dem (must be TRUE).
 
 - **Usuario**:
   
-    edit_insert_elevation_from_dem (debe ser TRUE).
+    edit_insert_elevation_from_dem (must be TRUE).
 
-    edit_update_elevation_from_dem (debe ser TRUE).
+    edit_update_elevation_from_dem (must be TRUE).
 
 
 .. note::
-  Los triggers de node/connec tanto en Insert cómo en Update en la captura automáticamente el valor de la cota. Por otro lado, la función **gw_fct_update_elevation_from_dem** de la caja de herramientas
-  activa automáticamente la captura de todas las dimensiones para la capa seleccionada.
+  The triggers of node/connec, both on Insert and Update, automatically capture the elevation value. On the other hand, the function **gw_fct_update_elevation_from_dem** from the toolbox
+  automatically activates the capture of all dimensions for the selected layer.
 
-**1. Cargar ráster en BD**
+**1. Load raster into DB**
 
-Los conceptos claros a tener en cuenta son:
+The key concepts to keep in mind are:
 
-**1.1. Nombre del fichero**:
+**1.1. File name**:
 
-Se recomienda que el nombre incluya la mayor cantidad de información posible sobre el ráster ya que
-dará información en la metatabla de ext_cat_raster sobre el tipo que es:
+It is recommended that the name includes as much information as possible about the raster since
+it will provide information in the ext_cat_raster metatable about its type:
 
-  *dg_dem_2019_u48 (proveedor, tipo de ráster, año de datos, hoja de mapa)*
+  *dg_dem_2019_u48 (provider, raster type, data year, map sheet)*
 
-De esta forma, cuando se inserta el ráster, también se llena el catálogo de ráster y lleva información detallada sobre el mismo.
-
-
-**1.2. Tipología de archivo**:
-
-Si todos los rásteres DEM se insertan en la misma tabla, todos deben ser iguales en términos de 
-formato para que las restricciones de la columna de la tabla no se rompan.
-En este sentido, al cargar el primer ráster, las restricciones deben crearse como se define en el punto dos de este documento.
+In this way, when the raster is inserted, the raster catalog is also populated and contains detailed information about it.
 
 
-**1.3. Ráster almacenado dentro o fuera de BD**:
+**1.2. File type**:
 
-Dado que hay dos entornos O/S para la máquina donde se aloja PostgreSQL, este proceso se detalla para cada uno de los dos entornos.
+If all DEM rasters are inserted into the same table, they must all be the same in terms of 
+format so that the table column constraints are not broken.
+In this regard, when loading the first raster, the constraints must be created as defined in point two of this document.
 
-Opción muy interesante para no **cargar la base de datos** y recargar archivos automáticamente (solo debes cambiar el archivo)
+
+**1.3. Raster stored inside or outside the DB**:
+
+Since there are two O/S environments for the machine hosting PostgreSQL, this process is detailed for each of the two environments.
+
+A very interesting option to avoid **loading the database** and reload files automatically (you only need to change the file).
 
 .. warning::
 
-  Se puede ejecutar el proceso desde el postgres local o desde el postgres del servidor dónde queremos insertar el ráster, siempre que 
-  tengamos acceso a él con vpn o otro método. Es más fácil en local. 
+  The process can be executed from the local postgres or from the postgres on the server where we want to insert the raster, as long as 
+  we have access to it via VPN or another method. It is easier locally. 
 
 
-*Entorno Windows*
+*Windows environment*
 
 
-1. Verifique que haya un ejecutable **raster2pgsql** en la carpeta bin de PostgreSQL.
+1. Verify that there is an executable **raster2pgsql** in the PostgreSQL bin folder.
 
-2. Abra el símbolo del sistema (cmd), vaya a la carpeta bin de PostgreSQL **(cd C:\Program Files\
+2. Open the command prompt (cmd), go to the PostgreSQL bin folder **(cd C:\Program Files\
 PostgreSQL\ 11\bin\)**.
 
-3. Ejecute el proceso utilizando una sentencia similar a la del ejemplo que se muestra a continuación, poniendo el SRID, la ruta al archivo, el tamaño del mosaico, 
-el nombre de la tabla a la que se importa el ráster y la conexión a la base de datos:
+3. Execute the process using a statement similar to the example shown below, specifying the SRID, the file path, the tile size, 
+the name of the table to which the raster is imported, and the database connection:
 
-  *raster2pgsql.exe -R -s 25831 -C -x raster.txt -t 1500x1500 -a utils.raster_dem -F -n rastercat_id | 
-  psql -d giswater -U postgres -p 5432*
-
-
-
-*Entorno Linux*
+.. code-block:: sql
+  
+  raster2pgsql.exe -R -s 25831 -C -x raster.txt -t 1500x1500 -a utils.raster_dem -F -n rastercat_id | 
+  psql -d giswater -U postgres -p 5432
 
 
+*Linux environment*
 
-El procedimiento puede variar según la distribución utilizada. No obstante, como regla general, la
-configuración del entorno debe cumplir las siguientes condiciones.
 
-Dado que PostgreSQL suele instalarse en la ruta del sistema, la ejecución de la línea de comandos
-puede realizarse de forma sencilla:
+The procedure may vary depending on the distribution used. However, as a general rule, the
+environment configuration must meet the following conditions.
 
-  *raster2pgsql -s 25831 -C -x raster.txt -t 1500x1500 -a utils.raster_dem -F -n rastercat_id | psql -d giswater -U postgres -p 5432*
+Since PostgreSQL is usually installed in the system path, the command line execution
+can be done easily:
 
-Si por alguna razón las variables de entorno están deshabilitadas, deben habilitarse:
+.. code-block:: sql
+  
+  raster2pgsql -s 25831 -C -x raster.txt -t 1500x1500 -a utils.raster_dem -F -n rastercat_id | psql -d giswater -U postgres -p 5432
 
-**Opción A**: archivo de entorno (con un servicio de recarga postgresql)
+If for some reason the environment variables are disabled, they must be enabled:
+
+**Opción A**: environment file (with a PostgreSQL reload service)
 
 POSTGIS_ENABLE_OUTDB_RASTERS=1
 
 POSTGIS_GDAL_ENABLED_DRIVERS=ENABLE_ALL
 
-**Opción B**: a través de la consola (mucho más fácil)
+**Opción B**: through the console (much easier)
 
-SET postgis.enable_outdb_rasters TO True;
+.. code-block:: sql
   
-SET postgis.enabled_drivers TO enable_all;
+  SET postgis.enable_outdb_rasters TO True;
+  
+  SET postgis.enabled_drivers TO enable_all;
 
 .. warning::
 
-  Si se hace con un usuario de PostgreSQL, este debe tener permisos de lectura para el archivo.
-  Si se hace con otro usuario (tipo root) este debe estar registrado en pg_hba.conf y en SGDB.
+  If done with a PostgreSQL user, this user must have read permissions for the file.
+  If done with another user (e.g., root), this user must be registered in pg_hba.conf and in the DBMS.
 
-**Anotaciones de sentencias**
+**Statement notes**
 
-*[-R] -s 25831 -C -x raster.txt -t 1500x1500 -a utils.raster_dem -F -n rastercat_id | psql -d giswater -U postgres -p 5432*
+.. code-block:: sql
+  
+  [-R] -s 25831 -C -x raster.txt -t 1500x1500 -a utils.raster_dem -F -n rastercat_id | psql -d giswater -U postgres -p 5432
 
 
-Donde: 
+Where: 
 
 **[-R]** 
 
-Puede ser Opcional. El ráster se almacena fuera de la base de datos. De lo contrario, se almacena en el 
-interior.
-El problema es que no es fácil trabajar con él. Puede ser el usuario del sistema y el
-usuario de Postgres debe ser el mismo y con permisos para leer / escribir en archivos.
-Esta opción es opcional, pero puede ser imprescindible según la estrategia de almacenamiento elegida.
+It can be optional. The raster is stored outside the database. Otherwise, it is stored inside.
+The problem is that it is not easy to work with it. The system user and the
+Postgres user must be the same and have permissions to read/write files.
+This option is optional, but it may be essential depending on the chosen storage strategy.
 
 .. note::
   
-  Para utilizar esta opción deben estar definidas las siguientes variables de entorno:
+  To use this option, the following environment variables must be defined:
 
   - POSTGIS_ENABLE_OUTDB_RASTERS
 
@@ -149,109 +154,112 @@ Esta opción es opcional, pero puede ser imprescindible según la estrategia de 
 
 **[-s 25831]**
 
-SRID, es **obligatorio**.
+SRID is **mandatory**.
 
 **[-C]** 
 
-Agrega restricciones, es requerido solo al cargar el **primer ráster**.
-Las restricciones que se crean son:
+Adds constraints, required only when loading the **first raster**.
+The constraints that are created are:
 
-- Altura del ráster (número de filas): enforce_height_rast
+- Raster height (number of rows): enforce_height_rast
 
-- Anchura del ráster (número de columnas): enforce_width_rast
+- Raster width (number of columns): enforce_width_rast
 
-- Valor no data: enforce_nodata_values_rast
+- No-data value: enforce_nodata_values_rast
 
-- Número de bandas (para DEM, 1): enforce_num_bands_rast
+- Number of bands (for DEM, 1): enforce_num_bands_rast
 
-- Tipo de píxel (1bit, 2bit, 4bit…): enforce_pixel_types_rast
+- Pixel type (1bit, 2bit, 4bit…):  enforce_pixel_types_rast
 
-- Escala en X: enforce_scalex_rast
+- X scale: enforce_scalex_rast
 
-- Escala en Y: enforce_scaley_rast
+- Y scale: enforce_scaley_rast
 
 - SRID: enforce_srid_rast
 
-- out_db (mantenimiento de información fuera de la base de datos)
+- out_db (maintenance of information outside the database)
 
-- Extensión máxima: enforce_max_extent_rast
+- Maximum extent: enforce_max_extent_rast
 
 .. warning::
 
-  Aunque es posible definir restricciones **no se recomiendamos su uso**, ya que pueden afectar al rendimiento 
-  y a la flexibilidad en la carga de datos raster.
+  Although it is possible to define constraints, **their use is not recommended**, as they can affect performance 
+  and flexibility when loading raster data.
 
 
 **[-x]**
 
-Excluye la restricción de la dimensión espacial. **Obligatorio** de usar si el propósito es poner más 
-de un ráster en la misma tabla (que será lo habitual).
+Excludes the spatial dimension constraint. **Mandatory** to use if the purpose is to put more 
+than one raster in the same table (which will be usual).
 
-Extensión máxima: enforce_max_extent_rast
+Maximum extent: enforce_max_extent_rast
 
 **[raster.txt]**
 
-Nombre del fichero. Sin espaciado, pero con metadatos.
+File name. No spaces, but with metadata.
 
 **[-t 1500x1500]**
 
-Tamaño de celda en la base de datos.
+Cell size in the database.
 
-**Límites**: 5000x5000.
-Superar este tamaño provoca error de memoria (*Failed to allocate memory*).
+**Limits**: 5000x5000.
+Exceeding this size causes a memory error (*Failed to allocate memory*).
 
-El tamaño recomendado no debe exceder 2000x2000 por fila.
+The recommended size should not exceed 2000x2000 per row.
 
-Se creará una nueva tabla en la base de datos (no se permiten actualizaciones) con la estructura definida.
-El proceso divide el ráster en partes según el tamaño indicado; cada fila de la tabla representa una parte del ráster.
+A new table will be created in the database (updates are not allowed) with the defined structure.
+The process divides the raster into parts according to the specified size; each row of the table represents a part of the raster.
 
-El punto clave es que el tamaño de entrada (por ejemplo, 1500x1500) es un divisor del tamaño del ráster. El divisor ideal es 1 a 1, pero 
-si el ráster supera los 2000x2000, debe dividirse siempre usando divisores exactos.
+The key point is that the input size (for example, 1500x1500) is a divisor of the raster size. The ideal divisor is 1 to 1, but 
+if the raster exceeds 2000x2000, it must always be divided using exact divisors.
 
-Ejemplos:
+Examples:
 
-Ráster 1000x1000 → -t 1001x1001 → 1 fila
+Raster 1000x1000 → -t 1001x1001 → 1 row
 
-Ráster 1000x1000 → -t 1000x1000 → 4 filas
+Raster 1000x1000 → -t 1000x1000 → 4 rows
 
-Ráster 2000x2000 → -t 2001x2001 → 1 fila
+Raster 2000x2000 → -t 2001x2001 → 1 rows
 
-Ráster 2200x2200 → -t 1100x1100 → 4 filas
+Raster 2200x2200 → -t 1100x1100 → 4 rows
 
-Ráster 5555x5555 → -t 1111x1111 → 16 filas
+Raster 5555x5555 → -t 1111x1111 → 16 rows
 
 
 **[-a utils.raster_dem]**
 
-Agrega ráster a la tabla, obligatorio ya que de lo contrario crearía uno nuevo con el conflicto que esto significa.
+Adds raster to the table, mandatory; otherwise, it would create a new one, causing a conflict.
 
 **[-F]**
 
-Agrega el nombre del archivo, obligatorio e importante para conocer el nombre del archivo.
+Adds the file name, mandatory and important to know the file name.
 
 **[-n rastercat_id]**
 
-Para el nombre de la columna donde insertar el nombre del archivo. Obligatorio
+For the name of the column where the file name will be inserted. Mandatory.
 
 **[-d giswater -U postgres -p 5432]**
 
-Parámetros de conexión: si se hace con un usuario de PostgreSQL, es directo. Si se hace con otro 
-usuario, pedirá la contraseña que también se puede hacer.
+Connection parameters: if done with a PostgreSQL user, it is direct. If done with another 
+user, it will ask for the password, which can also be provided.
 
-Queries de ejemplo de cargas de ráster directamente desde la línea de 
-comandos en localhost:
+Example queries for loading rasters directly from the command line on localhost:
 
 
-- Insertamos en host 000.000.00:5432 con usuario ‘admin’ e insertamos directamente en una tabla existente ‘utils.raster_dem’ (variable -a):
+- We insert into host 000.000.00:5432 with user ‘admin’ and insert directly into an existing table ‘utils.raster_dem’ (variable -a):
 
-*"C:\Program Files\PostgreSQL\9.6\bin\raster2pgsql.exe" "C:\Users\usuari\Desktop\
-raster.tif" -I -C -x -a -s 25831 -t 1500x1500 -F -n rastercat_id utils.raster_dem | "C:\
-Program Files\PostgreSQL\9.6\bin\psql.exe" -h 000.000.00 -p 5432 -d gis -U admin*
+.. code-block:: sql
 
-- Insertamos en host 000.000.00:5432 con usuario ‘admin’ e insertamos en una tabla nueva que se llamará ‘ws.raster’ (variable -c):
+  "C:\Program Files\PostgreSQL\9.6\bin\raster2pgsql.exe" "C:\Users\usuari\Desktop\
+  raster.tif" -I -C -x -a -s 25831 -t 1500x1500 -F -n rastercat_id utils.raster_dem | "C:\
+  Program Files\PostgreSQL\9.6\bin\psql.exe" -h 000.000.00 -p 5432 -d gis -U admin
 
-*"C:\Program Files\PostgreSQL\11\bin\raster2pgsql.exe" "C:\Users\usuari\Desktop\mde\
-mde.tif" -I -C -x -c -s 25831 -t 1500x1500 -F -n rastercat_id ws.raster | "C:\Program Files\
-PostgreSQL\11\bin\psql.exe" -h 000.000.00 -p 5432 -d gis -U admin*
+- We insert into host 000.000.00:5432 with user ‘admin’ and insert into a new table that will be called ‘ws.raster’ (variable -c):
+
+.. code-block:: sql
+  
+  "C:\Program Files\PostgreSQL\11\bin\raster2pgsql.exe" "C:\Users\usuari\Desktop\mde\
+  mde.tif" -I -C -x -c -s 25831 -t 1500x1500 -F -n rastercat_id ws.raster | "C:\Program Files\
+  PostgreSQL\11\bin\psql.exe" -h 000.000.00 -p 5432 -d gis -U admin
 
 

@@ -2,50 +2,48 @@
 Add fields
 ==================
 
+This procedure allows the **creation**, **modification** and **deletion of fields** in a specific element of the system or in all elements of the same type (*cat_feature*).
 
-Este procedimiento permite la **creación**, **modificación** y **borrado de campos** adicionales en un elemento concreto del sistema o en todos los elementos de un mismo tipo (cat_feature).
+This functionality is useful when it is necessary to store information that is not contemplated in the standard Giswater data model.
 
-Esta funcionalidad es útil cuando se necesita almacenar información que no está contemplada en el modelo de datos estándar de Giswater.
+It is important to highlight that the additional fields system does not directly add columns to the parent tables (node, arc, connec).
+For this reason, these fields cannot be queried directly in those tables, but they will be available:
 
-Es importante destacar que el sistema de campos adicionales no añade directamente columnas en las tablas madre (node, arc, connec).
-Por este motivo, estos campos no pueden consultarse directamente en dichas tablas, pero sí estarán disponibles:
+- In the QGIS forms.
 
-- En los formularios de QGIS.
-
-- En las vistas child.
-
-**Descripción general**
+- In the child views.
 
 
-Para llevar a cabo este proceso es necesario disponer de **permisos de administrador**, ya que las vistas afectadas se modifican 
-automáticamente cuando se crea, actualiza o elimina un campo adicional.
-
-El proceso consta de dos pasos diferenciados:
-
-1. Creación del campo en la base de datos, descrita en este protocolo.
-
-2. Configuración de la visualización del campo en el diálogo, detallada en el protocolo :ref:`config_form_fields`
+**General description**
 
 
-**Consideraciones técnicas**
+To carry out this process, it is necessary to have **administrator permissions**, since the affected views are automatically modified when an additional field is created, updated, or deleted.
+
+The process consists of two distinct steps:
+
+1. Creation of the field in the database, described in this protocol.
+
+2. Configuration of the field display in the dialog, detailed in the protocol :ref:`config_form_fields`
 
 
-La información asociada a los campos adicionales se almacena en las siguientes tablas:
+**Technical considerations**
+
+
+The information associated with additional fields is stored in the following tables:
 
   *sys_addfields*
 
   *config_form_fields*
 
-Dado que la vista del elemento al que se añade un campo adicional se recrea automáticamente cada vez que se crea, actualiza o 
-elimina un campo, existe una función específica diseñada para realizar de forma integrada todas las operaciones necesarias 
-relacionadas con la gestión de campos adicionales.
-
-**Creación de un campo adicional**
+Since the view of the element to which an additional field is added is automatically recreated each time a field is created, updated, or deleted, there is a specific function designed to perform all necessary operations related to the management of additional fields in an integrated manner.
 
 
-La llamada a la función es:
+**Creation of an additional field**
 
-::
+The function call is:
+
+
+.. code-block:: sql
 
    SELECT SCHEMA_NAME.gw_fct_admin_manage_addfields(
      $${"client":{"lang":"ES"},
@@ -67,61 +65,64 @@ La llamada a la función es:
         }
      }$$);
 
-**Parámetros de la función**
+**Function parameters**
 
 
-**SCHEMA_NAME**: es el nombre del esquema.
+**SCHEMA_NAME**: is the name of the schema.
 
-**“catFeature”**: es el feature al que queremos añadir un campo nuevo.
+**“catFeature”**: is the feature to which we want to add a new field.
 
-**“action”**: la acción que pretendemos desarrollar, que para el caso será CREATE.
+**“action”**: the action we intend to perform, which in this case will be CREATE.
 
-**“multi_create”**: SUPER IMPORTANTE, permite la creación del campo adicional PARA TODAS LAS FEATURES mismo tipo (nodos, arcos, connec o gully en función de la escogida)
+**“multi_create”**: SUPER IMPORTANT, allows the creation of the additional field FOR ALL FEATURES of the same type (nodes, arcs, connec, or gully depending on the one chosen)
 
-**"columnname”**: el nombre del campo adicional. Totalmente prohibido caracteres especiales.
+**"columnname”**: the name of the additional field. Special characters are strictly prohibited.
 
-**"datatype"**: el tipo de dato, consultar en esta query los disponibles:
+**"datatype"**: the data type, consult the available ones in this query:
 
-::
+.. code-block:: sql
 
-   (SELECT id
+   SELECT id
     FROM SCHEMA_NAME.config_typevalue
-    WHERE typevalue = 'datatype_typevalue')
+    WHERE typevalue = 'datatype_typevalue'
 
-**"widgettype"**: el tipo de widget a ser usado, consultar en esta query los disponibles:
+**"widgettype"**: the type of widget to be used, consult the available ones in this query:
 
-::
+.. code-block:: sql
 
-   (SELECT id 
+   SELECT id 
     FROM SCHEMA_NAME.config_typevalue 
-    WHERE typevalue = 'widgettype_typevalue')
+    WHERE typevalue = 'widgettype_typevalue'
 
 
-**"label"**: "addfield_all", la etiqueta a mostrar al usuario en el dialogo.
+**"label"**: "addfield_all", the label to display to the user in the dialog.
 
-**"ismandatory"**: si el campo es obligatorio para el usuario.
+**"ismandatory"**: whether the field is mandatory for the user
 
-**"fieldLength"**: longitud del campo.
+**"fieldLength"**: length of the field.
 
-**"numDecimals"**: numero de decimales.
+**"numDecimals"**: number of decimals.
 
-**"active"**: si el campo está activo o lo queremos dejar para otro momento.
+**"active"**: whether the field is active or we want to leave it for another time.
 
-**"iseditable"**: si el campo es editable para usuario.
+**"iseditable"**: whether the field is editable by the user.
 
 .. warning::
   
-  Cuidado con la sintaxis de las peticiones JSON. Es muy fácil equivocarse. Recomendamos ser 
-  muy cuidadosos en este punto.
+  Be careful with the syntax of JSON requests. It is very easy to make mistakes. 
+  We recommend being very careful at this point.
+  
 
 
-**Borrado de un campo adicional**
+**Deletion of an additional field**
 
 
-Si quisiéramos borrar un campo adicional, procederíamos de la siguiente manera:
+If we wanted to delete an additional field, we would proceed as follows:
 
-SELECT SCHEMA.gw_fct_admin_manage_addfields($${
-"client":{"lang":"ES"},
-"feature":{"catFeature":"PUMP"},
-"data":{"action":"DELETE", "multi_create":"true", "parameters":{"columnname":"pump_test"}}}$$)
+.. code-block:: sql
+   
+   SELECT SCHEMA.gw_fct_admin_manage_addfields($${
+   "client":{"lang":"ES"},
+   "feature":{"catFeature":"PUMP"},
+   "data":{"action":"DELETE", "multi_create":"true", "parameters":{"columnname":"pump_test"}}}$$)
 
