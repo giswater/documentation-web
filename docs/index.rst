@@ -43,8 +43,3 @@ Please take a look at one of the following documents.
 
    Admin Protocols <giswater/for-admins/admin-protocols/index>
    Logic dbmodel <giswater/for-admins/logic-dbmodel/logic-dbmodel>
-   
-
-
-
-This is a test to verify the correct workflow of the sync-i18n process. Prova 2. Prova 3.
