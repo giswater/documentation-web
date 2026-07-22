@@ -42,4 +42,7 @@ Please take a look at one of the following documents.
    :caption: FOR ADMINISTRATORS
 
    Admin Protocols <giswater/for-admins/admin-protocols/index>
-   Logic dbmodel <giswater/for-admins/logic-dbmodel/logic-dbmodel>
+   Logic Dbmodel <giswater/for-admins/logic-dbmodel/logic-dbmodel>
+   Fisic Dbmodel <giswater/for-admins/fisic-dbmodel/fisic-dbmodel>
+   Interoperability <giswater/for-admins/interoperability/interoperability>
+   System Variables <giswater/for-admins/system-variables/system-variables>
